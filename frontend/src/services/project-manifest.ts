@@ -150,24 +150,43 @@ export function createProjectManifest(project: ProjectManifestInput): ProjectMan
 export function validateProjectManifest(value: unknown): value is ProjectManifest {
   if (!value || typeof value !== 'object') return false;
   const manifest = value as Partial<ProjectManifest>;
+  const identity = manifest.identity;
+  const structure = manifest.structure;
+  const settings = manifest.settings;
+  const content = manifest.content;
 
   return manifest.manifestVersion === 1
-    && !!manifest.identity
-    && typeof manifest.identity.id === 'string'
-    && typeof manifest.identity.name === 'string'
-    && typeof manifest.identity.description === 'string'
-    && !!manifest.structure
-    && (manifest.structure.dimension === '2D' || manifest.structure.dimension === '3D')
-    && (manifest.structure.scriptingMode === 'csharp' || manifest.structure.scriptingMode === 'lumen')
-    && !!manifest.settings
-    && !!manifest.settings.display
-    && !!manifest.settings.physics
-    && !!manifest.settings.diagnostics
-    && !!manifest.content
-    && Array.isArray(manifest.content.scenes)
-    && Array.isArray(manifest.content.scripts)
-    && Array.isArray(manifest.content.assets)
-    && Array.isArray(manifest.extensions);
+    && !!identity
+    && typeof identity.id === 'string'
+    && typeof identity.name === 'string'
+    && typeof identity.description === 'string'
+    && typeof identity.image === 'string'
+    && typeof identity.createdAt === 'number'
+    && typeof identity.updatedAt === 'number'
+    && !!structure
+    && (structure.dimension === '2D' || structure.dimension === '3D')
+    && typeof structure.templateId === 'string'
+    && (structure.scriptingMode === 'csharp' || structure.scriptingMode === 'lumen')
+    && !!settings
+    && !!settings.display
+    && Number.isFinite(settings.display.resolutionWidth)
+    && Number.isFinite(settings.display.resolutionHeight)
+    && typeof settings.display.vsync === 'boolean'
+    && !!settings.physics
+    && Number.isFinite(settings.physics.gravity)
+    && !!settings.diagnostics
+    && typeof settings.diagnostics.debugMode === 'boolean'
+    && !!settings.rendering && typeof settings.rendering === 'object'
+    && !!settings.input && typeof settings.input === 'object'
+    && !!settings.audio && typeof settings.audio === 'object'
+    && !!settings.camera && typeof settings.camera === 'object'
+    && !!settings.advanced && typeof settings.advanced === 'object'
+    && !!content
+    && Array.isArray(content.scenes)
+    && Array.isArray(content.scripts)
+    && Array.isArray(content.assets)
+    && Array.isArray(manifest.extensions)
+    && !!manifest.compatibility;
 }
 
 /** Lança erro em vez de permitir conversão estrutural acidental. */
