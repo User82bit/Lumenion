@@ -3,7 +3,7 @@
 **Status:** Em desenvolvimento — especificação arquitetural  
 **Escopo deste documento:** registrar decisões aprovadas e propostas ainda pendentes antes da implementação.  
 **Plataforma-alvo inicial:** Windows  
-**Branch de trabalho:** `docs/extensions-api-architecture`  
+**Branch de trabalho:** `docs/extensions-node-runtime`  
 **Destino do PR:** `homologa`
 
 > Este documento descreve o contrato arquitetural planejado. Não representa funcionalidades já implementadas.
@@ -115,16 +115,19 @@ Estados distintos:
 
 O comportamento de inicialização será declarado pela extensão e respeitará as configurações e escolhas do usuário. A implementação deverá definir callbacks de ciclo de vida (por exemplo, carregar, ativar, desativar e descarregar) no contrato do SDK.
 
-## 7. Modos de execução e isolamento
+## 7. Runtime JavaScript e isolamento
 
-Decisão aprovada: modelo híbrido.
+Decisão aprovada: **Node.js + V8, com um processo separado por extensão**.
 
-- Extensões comuns poderão compartilhar um processo de runtime, mantendo contextos, identidades, APIs e limites separados.
-- Extensões que solicitem capacidades sensíveis ou execução de processos externos deverão utilizar processo isolado.
-- Interfaces independentes serão hospedadas em WebView isolada.
-- Comunicação entre processos, WebView, host e extensões será mediada por canais validados.
+- TypeScript será compilado para JavaScript executado pelo Node.js.
+- Cada extensão terá seu próprio processo Node.js. Não haverá compartilhamento de memória de execução entre extensões.
+- O mesmo runtime distribuído pelo Lumenion poderá ser utilizado por todos os processos, mas cada extensão terá ciclo de vida, identidade, limites e falhas isolados.
+- Um **Runtime Supervisor**, coordenado pelo Host C#, será responsável por iniciar, monitorar, suspender e encerrar os processos, além de administrar versões, recursos e ciclo de vida.
+- Extensões não terão acesso direto a objetos internos do host ou de outras extensões; utilizarão a Extension API Bridge e canais IPC autenticados e validados.
+- Interfaces independentes serão hospedadas em WebView2, separadas do processo lógico Node.js e sem acesso direto ao sistema operacional ou aos serviços internos.
+- Extensões que solicitem capacidades sensíveis (por exemplo, execução de comandos ou processos externos) estarão sujeitas a restrições adicionais do Windows, a serem especificadas e testadas.
 
-**Requisito de segurança:** contexto JavaScript, Worker ou iframe, isoladamente, não é uma fronteira de segurança suficiente. O desenho final deve escolher um runtime com isolamento efetivo e controles do Windows (identidade do processo, permissões, limites de recursos e canais IPC). A tecnologia concreta do runtime ainda está pendente de avaliação técnica.
+**Requisito de segurança:** node:vm, worker_threads, contextos V8 e iframes não serão tratados isoladamente como fronteiras de segurança entre extensões não confiáveis. A separação principal será feita por processo do sistema operacional, reforçada por controles de identidade, permissões, limites de recursos e IPC. A política concreta de sandbox do Windows ainda deverá ser detalhada na revisão de segurança.
 
 ## 8. Permissões e operações sensíveis
 
@@ -262,7 +265,6 @@ A ordem é uma estratégia de entrega, não uma promessa de que todos os detalhe
 
 Os itens abaixo não devem ser considerados aprovados por inferência:
 
-- runtime JavaScript concreto para Windows e mecanismo de isolamento por processo;
 - modelo IPC e protocolo de mensagens entre runtime, WebView, C# e Rust;
 - formato final do manifesto e do pacote;
 - algoritmo de assinatura, verificação de integridade e cadeia de confiança do Marketplace;
