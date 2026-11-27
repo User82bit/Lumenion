@@ -1,11 +1,12 @@
-// 💾 Camada de persistência dos projetos, indexada por ID.
-//
-// Hoje usa localStorage como storage local rápido (o WebView2 do MAUI suporta
-// normalmente, já que é um browser real embutido). Quando a Fase 0 do roadmap
-// (compressão real de verdade + parser multi-script) estiver pronta, a leitura
-// pode passar a vir do próprio arquivo .light via useBridge — a INTERFACE
-// pública (saveProject/getProject/getAllProjects/deleteProject) pode continuar
-// exatamente igual, só troca a implementação por dentro.
+// Persistência local e compatibilidade do modelo legado de projetos.
+// O ProjectManifest passa a ser o contexto estruturado compartilhado pelos editores.
+
+import {
+    assertProjectDimensionUnchanged,
+    createProjectManifest,
+    validateProjectManifest,
+    type ProjectManifest,
+} from './project-manifest';
 
 const STORAGE_KEY = 'lumenion:projects';
 
@@ -30,9 +31,15 @@ export interface StoredProject {
     config: ProjectConfig;
     createdAt: number;
     updatedAt: number;
-    /** Caminho da pasta base criada em disco na hora da criação (undefined em projetos importados antes dessa feature). */
     folderPath?: string;
+    /** Manifesto completo consumido pelo Settings Editor e pelo Game Editor. */
+    manifest: ProjectManifest;
 }
+
+export type SaveProjectInput = Omit<StoredProject, 'updatedAt' | 'manifest'> & {
+    updatedAt?: number;
+    manifest?: ProjectManifest;
+};
 
 export function defaultProjectConfig(): ProjectConfig {
     return {
@@ -46,10 +53,24 @@ export function defaultProjectConfig(): ProjectConfig {
     };
 }
 
+function hydrateProject(project: Omit<StoredProject, 'manifest'> & { manifest?: ProjectManifest }): StoredProject {
+    const updatedAt = project.updatedAt ?? project.createdAt ?? Date.now();
+    const manifest = project.manifest && validateProjectManifest(project.manifest)
+        ? createProjectManifest({ ...project, updatedAt, manifest: project.manifest })
+        : createProjectManifest({ ...project, updatedAt });
+
+    return { ...project, updatedAt, manifest };
+}
+
 function readAll(): Record<number, StoredProject> {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : {};
+        if (!raw) return {};
+
+        const parsed = JSON.parse(raw) as Record<number, Omit<StoredProject, 'manifest'> & { manifest?: ProjectManifest }>;
+        return Object.fromEntries(
+            Object.entries(parsed).map(([id, project]) => [Number(id), hydrateProject(project)]),
+        );
     } catch (error) {
         console.error('Falha ao ler projetos salvos do storage:', error);
         return {};
@@ -61,19 +82,38 @@ function writeAll(data: Record<number, StoredProject>): void {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (error) {
         console.error('Falha ao salvar projetos no storage:', error);
+        throw new Error('Não foi possível persistir o projeto no armazenamento local.');
     }
 }
 
-/** Cria ou atualiza um projeto, sempre indexado pelo mesmo `id`. Preserva createdAt original em edições. */
-export function saveProject(project: Omit<StoredProject, 'updatedAt'>): StoredProject {
+/**
+ * Cria ou atualiza um projeto. A dimensão é validada contra o registro atual
+ * antes de qualquer gravação, inclusive quando a chamada vem de importação.
+ */
+export function saveProject(project: SaveProjectInput): StoredProject {
     const all = readAll();
     const existing = all[project.id];
 
-    const toSave: StoredProject = {
+    if (existing) {
+        assertProjectDimensionUnchanged(existing.manifest.structure.dimension, project.config.dimension);
+        if (project.manifest) {
+            assertProjectDimensionUnchanged(
+                existing.manifest.structure.dimension,
+                project.manifest.structure.dimension,
+            );
+        }
+    } else if (project.manifest && project.manifest.structure.dimension !== project.config.dimension) {
+        throw new Error('A dimensão do manifesto não corresponde à configuração inicial do projeto.');
+    }
+
+    const createdAt = existing?.createdAt ?? project.createdAt;
+    const updatedAt = Date.now();
+    const toSave = hydrateProject({
         ...project,
-        createdAt: existing?.createdAt ?? project.createdAt,
-        updatedAt: Date.now(),
-    };
+        createdAt,
+        updatedAt,
+        manifest: project.manifest ?? existing?.manifest,
+    });
 
     all[project.id] = toSave;
     writeAll(all);
