@@ -3,7 +3,7 @@
 **Status:** Em desenvolvimento — especificação arquitetural  
 **Escopo deste documento:** registrar decisões aprovadas e propostas ainda pendentes antes da implementação.  
 **Plataforma-alvo inicial:** Windows  
-**Branch de trabalho:** `docs/extensions-ipc`  
+**Branch de trabalho:** `docs/extensions-ipc-auth`  
 **Destino do PR:** `homologa`
 
 > Este documento descreve o contrato arquitetural planejado. Não representa funcionalidades já implementadas.
@@ -144,6 +144,22 @@ Decisão aprovada: **Windows Named Pipes como transporte, com JSON-RPC 2.0 como 
 
 O uso de Named Pipes não substitui o sandbox do Windows nem a validação de permissões. ACLs, autenticação da identidade do processo, proteção contra sequestro de pipe, política de reconexão, timeouts e limites de mensagens ainda deverão ser detalhados na especificação de segurança.
 
+### 7.2 Autenticação e identidade do canal IPC
+
+Decisão aprovada: **ACL do Windows + verificação do PID + handshake criptográfico**.
+
+O estabelecimento de cada canal IPC deverá passar pelas três camadas abaixo:
+
+1. **ACL do Windows:** o Named Pipe será criado com uma lista de controle de acesso restritiva, permitindo conexão somente às identidades/processos autorizados para aquele runtime. As permissões deverão seguir o princípio do menor privilégio.
+2. **Verificação do processo:** após a conexão, o Host deverá obter a identidade do processo cliente (incluindo PID) e compará-la com o processo Node.js que o Runtime Supervisor iniciou e registrou para aquela extensão. PID isolado não será tratado como prova criptográfica de identidade; deverá ser validado no contexto do processo supervisionado e de sua sessão de execução.
+3. **Handshake criptográfico:** antes de aceitar mensagens JSON-RPC, Host e runtime executarão um desafio-resposta criptográfico com nonce de uso único. O mecanismo deverá vincular a prova à sessão/canal e rejeitar nonces reutilizados, respostas inválidas ou handshakes expirados.
+
+A conexão somente será considerada autenticada após a aprovação de todas as camadas. Qualquer falha deverá encerrar/rejeitar o canal e gerar um registro de segurança sem expor segredos.
+
+A autenticação identifica e valida o processo conectado; **não concede permissões de API**. O Host continuará verificando identidade, capacidade solicitada e autorização em cada operação. Segredos e material criptográfico deverão ser gerados, armazenados, rotacionados e descartados por mecanismos protegidos do host, nunca embutidos no pacote da extensão.
+
+Detalhes ainda pendentes de especificação: algoritmo e parâmetros criptográficos, derivação/armazenamento de chaves ou credenciais, formato do handshake, associação entre PID e instância de processo, ACLs exatas, proteção contra pipe hijacking e corrida de conexão, expiração, reconexão e rotação.
+
 A comunicação com WebView2 é uma fronteira distinta: continuará usando o mecanismo de mensagens do WebView2, com validação de origem, conteúdo e schemas. Não se deve expor diretamente o pipe do runtime à interface web.
 
 ## 8. Permissões e operações sensíveis
@@ -283,9 +299,11 @@ A ordem é uma estratégia de entrega, não uma promessa de que todos os detalhe
 Os itens abaixo não devem ser considerados aprovados por inferência:
 
 - protocolo específico de mensagens entre WebView2 e a camada de UI, incluindo validação de origem e schemas;
+- parâmetros criptográficos, gestão de credenciais e especificação detalhada do handshake IPC;
 - formato final do manifesto e do pacote;
 - algoritmo de assinatura, verificação de integridade e cadeia de confiança do Marketplace;
 - valores padrão e métricas para limites de CPU/memória;
+- ACLs detalhadas, associação segura do PID à instância supervisionada, proteção contra pipe hijacking, reconexão e timeouts do IPC;
 - política exata de ativação automática e callbacks de ciclo de vida;
 - schemas definitivos dos módulos da API;
 - estratégia de armazenamento de permissões e histórico/auditoria;
