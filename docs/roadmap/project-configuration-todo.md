@@ -161,4 +161,4 @@ Atualizar este registro em cada etapa. Quando a documentação desta branch for 
 
 | Data | Branch/PR | Alterações | Testes/evidências | Status |
 |---|---|---|---|---|
-| 2026-11-27 | `feature/project-manifest-core` | Manifesto v1 inicial, Project Core, bloqueio de dimensão e contexto do Game Editor | Revisão estática dos arquivos; build/typecheck e testes automatizados pendentes | Em desenvolvimento |
+| 2026-11-27 | `feature/project-manifest-core` / PR #6 | Manifesto v1 inicial, Project Core, bloqueio de dimensão e contexto do Game Editor | Revisão estática concluída; CI sem execuções reportadas; build/typecheck e testes automatizados pendentes | Revisão |
