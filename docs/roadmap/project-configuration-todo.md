@@ -2,7 +2,7 @@
 
 **Branch de documentação:** `docs/project-configuration-architecture`  
 **PR de destino:** `homologa`  
-**Estado geral:** Não iniciada (implementação)  
+**Estado geral:** Em desenvolvimento  
 **Documento relacionado:** [Arquitetura de criação, configuração e ciclo de vida de projetos](../architecture/project-configuration-architecture.md)
 
 ## Legenda de status
@@ -23,7 +23,7 @@
 | Registrar regra de dimensão imutável | Concluída | Regra arquitetural documentada |
 | Definir categorias e níveis simplificado/avançado | Concluída | Organização inicial documentada |
 | Definir templates iniciais | Concluída | Presets propostos documentados |
-| Definir contrato definitivo do ProjectManifest | Não iniciada | Campos, tipos, validações, defaults, unidades e versionamento aprovados |
+| Definir contrato definitivo do ProjectManifest | Em desenvolvimento | Campos, tipos, validações, defaults, unidades e versionamento aprovados |
 | Definir contrato de eventos e sincronização | Não iniciada | Eventos, payloads, ordenação e consistência especificados |
 | Definir política de aplicação das configurações | Não iniciada | Política por campo: imediata, reinício de subsistema, reabertura ou somente criação |
 | Definir contrato versionado do pacote .light | Não iniciada | Cabeçalho, manifesto, conteúdo, integridade e compatibilidade especificados |
@@ -33,11 +33,11 @@
 
 | Etapa | Status | Critério de conclusão |
 |---|---|---|
-| Criar tipos e schema versionado do manifesto | Não iniciada | Tipos e validação centralizados, sem dependência da UI |
-| Criar serviço Project Core | Não iniciada | API única para carregar, consultar, validar e atualizar projetos |
-| Implementar validação de dimensão imutável | Não iniciada | Tentativas de alteração são rejeitadas no Core |
+| Criar tipos e schema versionado do manifesto | Em desenvolvimento | Tipos e validação centralizados, sem dependência da UI |
+| Criar serviço Project Core | Em desenvolvimento | API única para carregar, consultar, validar e atualizar projetos |
+| Implementar validação de dimensão imutável | Em desenvolvimento | Tentativas de alteração são rejeitadas no Core |
 | Implementar validação de configurações | Não iniciada | Tipos, limites, dependências e campos por dimensão validados |
-| Implementar eventos do ciclo de vida | Não iniciada | Eventos documentados e testados |
+| Implementar eventos do ciclo de vida | Em desenvolvimento | Eventos documentados e testados |
 | Implementar política de atualização concorrente | Não iniciada | Evita estado divergente ou sobrescrita silenciosa |
 | Criar testes unitários do manifesto/Core | Não iniciada | Cobertura de validação, imutabilidade e migrações |
 
@@ -62,8 +62,8 @@
 | Implementar modo simplificado | Não iniciada | Exibe opções essenciais sem duplicar modelo |
 | Implementar modo avançado | Não iniciada | Expõe parâmetros avançados suportados |
 | Implementar seleção de templates | Não iniciada | Template preenche presets coerentes com dimensão |
-| Tornar dimensão fixa após criação | Não iniciada | Campo exibido como somente leitura em edição |
-| Fazer Settings Editor consumir Project Core | Não iniciada | Não mantém cópia independente da configuração |
+| Tornar dimensão fixa após criação | Em desenvolvimento | Campo exibido como somente leitura em edição |
+| Fazer Settings Editor consumir Project Core | Em desenvolvimento | Não mantém cópia independente da configuração |
 | Implementar validação e feedback de campos | Não iniciada | Erros e limites comunicados na interface |
 | Testar criação, edição e reabertura | Não iniciada | Dados persistem e reabrem corretamente |
 
@@ -72,7 +72,7 @@
 | Etapa | Status | Critério de conclusão |
 |---|---|---|
 | Definir contrato de contexto consumido pelo Game Editor | Não iniciada | Contexto completo tipado e documentado |
-| Carregar contexto via Project Core | Não iniciada | Editor não depende de objeto parcial do localStorage |
+| Carregar contexto via Project Core | Em desenvolvimento | Editor não depende de objeto parcial do localStorage |
 | Disponibilizar dimensão/template/linguagem aos subsistemas | Não iniciada | Subsistemas consultam fonte central |
 | Sincronizar alterações relevantes | Não iniciada | Atualizações chegam aos consumidores corretos |
 | Aplicar política de reinicialização | Não iniciada | Configurações são aplicadas conforme contrato |
@@ -136,6 +136,29 @@ As branches são propostas e podem ser agrupadas quando houver dependência téc
 
 | Data | Branch/PR | Alterações | Testes/evidências | Status |
 |---|---|---|---|---|
-| 2026-11-27 | `docs/project-configuration-architecture` | Criação da documentação arquitetural e do TODO | Revisão documental; nenhuma implementação funcional executada | Revisão |
+| 2026-11-27 | `docs/project-configuration-architecture` / PR #5 | Documentação arquitetural e TODO integrados em `homologa` | PR #5 merged | Concluída |
 
 Atualizar este registro em cada etapa. Quando a documentação desta branch for revisada e o PR aberto, alterar o status correspondente para **Revisão**.
+
+
+### Implementação inicial — `feature/project-manifest-core`
+
+**Status:** Em desenvolvimento
+
+- [x] Criar contrato TypeScript inicial `ProjectManifest` com versão de esquema.
+- [x] Criar normalização de projetos legados para manifesto v1 em memória.
+- [x] Persistir o manifesto junto ao registro local do projeto.
+- [x] Criar fachada Project Core para consulta, salvamento, atualizações e eventos.
+- [x] Impedir alteração de dimensão no salvamento, inclusive quando existe manifesto fornecido.
+- [x] Desabilitar seleção de dimensão no formulário de edição.
+- [x] Carregar o contexto do Game Editor por meio do Project Core.
+- [ ] Fazer build/typecheck e corrigir eventuais erros.
+- [ ] Adicionar testes automatizados de validação, migração e imutabilidade.
+- [ ] Integrar Settings Editor e Game Editor com atualização observável do contexto.
+- [ ] Migrar persistência oficial de localStorage para o diretório do projeto via bridge C#/MAUI.
+
+**Limitações desta entrega:** o schema v1 cobre os campos que já existem no frontend e reserva objetos extensíveis para categorias ainda não suportadas pela engine. A persistência continua em localStorage nesta etapa; ainda não foi gravado `project.manifest` na pasta física. A serialização .light completa também não faz parte desta branch.
+
+| Data | Branch/PR | Alterações | Testes/evidências | Status |
+|---|---|---|---|---|
+| 2026-11-27 | `feature/project-manifest-core` | Manifesto v1 inicial, Project Core, bloqueio de dimensão e contexto do Game Editor | Revisão estática dos arquivos; build/typecheck e testes automatizados pendentes | Em desenvolvimento |
