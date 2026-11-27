@@ -10,13 +10,13 @@ import {
   type StoredProject,
   type ProjectConfig,
   defaultProjectConfig,
-  saveProject,
   getAllProjects,
 } from '../../services/project-store';
 
 import LeftBar from './sub-components/LeftBar/LeftBar';
 import MainContent from './sub-components/MainContent/MainContent';
 import CreateWindow from './sub-components/CreateWindows/CreateWindow';
+import { saveProjectContext } from '../../services/project-core';
 
 type ActiveGroup = 'files' | 'extension' | null;
 
@@ -133,7 +133,7 @@ export default function HomePage() {
       // 3. Persiste no storage, agora restaurando a config REAL do arquivo
       // (antes, o formato de texto antigo não guardava configProje/configGame
       // de forma recuperável, então todo import caía na config padrão)
-      const projetoImportado = saveProject({
+      const projetoImportado = saveProjectContext({
         id: projetoDecodificado.ProjectID,
         image: projetoDecodificado.ImgUrl || 'assets/pngs/image-static.png',
         gameName: projetoDecodificado.name,
@@ -266,7 +266,7 @@ export default function HomePage() {
       }
     }
 
-    const projetoSalvo = saveProject({
+    const projetoSalvo = saveProjectContext({
       id,
       image: selectedImage || "assets/pngs/image-static.png",
       gameName: InputGameName,
