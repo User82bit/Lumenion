@@ -394,3 +394,25 @@ A estratégia de compatibilidade para versões futuras e antigas será definida 
 ## 14. Sequência de implementação proposta
 
 A sequência detalhada e o estado de cada etapa estão em [TODO — ciclo de vida e configurações de projetos](../roadmap/project-configuration-todo.md). A implementação deve começar somente após a revisão do contrato do manifesto e dos pontos pendentes críticos.
+
+
+## 15. Registro da primeira implementação
+
+A branch `feature/project-manifest-core` iniciou a implementação da fundação:
+
+- Criado `frontend/src/services/project-manifest.ts` com o contrato inicial `ProjectManifest`, `manifestVersion: 1`, normalização e validação estrutural.
+- Criado `frontend/src/services/project-core.ts` como fachada para leitura, salvamento, atualizações de configurações e publicação dos primeiros eventos.
+- O `project-store.ts` passa a hidratar registros legados com um manifesto e a persistir o manifesto junto ao registro.
+- O salvamento rejeita divergência de dimensão entre o projeto existente, a configuração e o manifesto informado.
+- O formulário de edição desabilita os controles de dimensão.
+- O Game Editor passa a carregar o projeto pela fachada Project Core e recebe o manifesto junto ao registro.
+
+### Limites explícitos da versão inicial
+
+- O schema v1 representa os campos que já existem no frontend. As categorias ainda não suportadas pela engine são objetos extensíveis vazios; isso não significa que suas funcionalidades já estejam implementadas.
+- O armazenamento continua em `localStorage`. A migração para manifesto físico na pasta do projeto depende da auditoria e integração da bridge C#/MAUI.
+- O pacote `.light` ainda não serializa o manifesto v1 nem todos os assets/conteúdos reais.
+- Os eventos estão disponíveis na camada central, mas a atualização reativa simultânea dos editores ainda precisa ser conectada.
+- Build, typecheck e testes automatizados devem ser executados antes de considerar esta etapa concluída.
+
+O estado detalhado e atualizado está no [TODO do ciclo de vida e configurações](../roadmap/project-configuration-todo.md).
