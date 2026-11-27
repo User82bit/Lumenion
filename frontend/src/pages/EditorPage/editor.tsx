@@ -8,7 +8,8 @@ import Footer from './sub-components/Footer/Footer';
 import LeftContent from './sub-components/LeftContent/LeftContent';
 import RightContent from './sub-components/RightContent/RightContent';
 
-import { type StoredProject, getProject } from '../../services/project-store';
+import { type StoredProject } from '../../services/project-store';
+import { getProjectContext } from '../../services/project-core';
 
 type Props = {
   projectId?: string;
@@ -35,7 +36,7 @@ export default function EditorPage({ projectId }: Props) {
       return;
     }
 
-    const encontrado = getProject(Number(projectId));
+    const encontrado = getProjectContext(Number(projectId));
     if (!encontrado) {
       setNotFound(true);
       return;
