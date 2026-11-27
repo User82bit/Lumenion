@@ -1,7 +1,7 @@
 # Acompanhamento — Sistema de Extensões
 
 **Status geral:** Em desenvolvimento  
-**Branch de documentação:** `docs/extensions-api-architecture`  
+**Branch de documentação:** `docs/extensions-node-runtime`  
 **Branch de homologação:** `homologa`
 
 Este arquivo acompanha o processo completo. Atualizar os estados durante cada etapa; não marcar uma etapa como concluída sem evidência.
@@ -26,11 +26,11 @@ Este arquivo acompanha o processo completo. Atualizar os estados durante cada et
 | Definição de permissões e consentimento | Concluído | Autorizações uma vez, nesta sessão ou persistentes e revogáveis; operações sensíveis mediadas. |
 | Definição de eventos entre extensões | Concluído | Broker central com verificação de identidade, permissões e schemas. |
 | Definição de dependências e exports | Concluído | Dependências obrigatórias/opcionais e exports privados/internos/públicos via proxy controlado. |
-| Definição do isolamento | Concluído | Modelo híbrido: runtime compartilhado para extensões comuns e processo isolado para capacidades sensíveis. |
+| Definição do runtime e isolamento | Concluído | Node.js + V8; processo separado por extensão, supervisionado pelo Host C#. |
 | Definição dos limites de recursos | Concluído | Limites globais e individuais configuráveis. |
 | Definição de compatibilidade | Concluído | Resolver adaptativo com aliases oficiais e desativação localizada de operações incompatíveis. |
 | Definição da entrega gradual da API | Concluído | Três fases de módulos registradas na especificação. |
-| Especificação dos itens técnicos pendentes | Em desenvolvimento | Selecionar runtime, IPC, manifesto, assinatura, quotas e schemas. |
+| Especificação dos itens técnicos pendentes | Em desenvolvimento | Definir IPC, manifesto, assinatura, quotas, sandbox Windows e schemas. |
 | Revisão integral da arquitetura pelo usuário | Não iniciado | Aprovação explícita da especificação consolidada. |
 | Revisão técnica de segurança | Não iniciado | Threat model, fronteiras de confiança e testes de isolamento. |
 | Implementação do SDK e contratos da Fase 1 | Não iniciado | Contratos TypeScript, schemas e testes. |
@@ -53,7 +53,10 @@ Este arquivo acompanha o processo completo. Atualizar os estados durante cada et
 - Registrados os modelos de UI nativa e independente.
 - Registrado suporte inicial exclusivo ao Windows.
 - Registrados Marketplace aberto com verificação, permissões supervisionadas, eventos entre extensões, dependências e exports TypeScript.
-- Registrados runtime híbrido, limites de recursos configuráveis e compatibilidade adaptativa.
+- Registrados limites de recursos configuráveis e compatibilidade adaptativa.
+- Runtime aprovado: Node.js + V8, com processo próprio por extensão e Runtime Supervisor coordenado pelo Host C#.
+- A decisão substitui a proposta anterior de processo compartilhado para extensões comuns e isolamento apenas para extensões sensíveis.
+- WebView2 permanece separada do runtime lógico; sandbox adicional do Windows e protocolo IPC seguem pendentes de especificação.
 - Registrada a entrega gradual da Extension API em três fases.
 - Nenhuma alteração em código de produto foi realizada nesta etapa.
 
