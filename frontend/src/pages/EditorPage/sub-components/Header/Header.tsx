@@ -2,6 +2,7 @@ import './Header.css'
 import * as FaIcons from 'react-icons/fa'
 import { type StoredProject } from '../../../../services/project-store';
 import { useState, useEffect, type ReactNode } from 'react';
+import OutButton from './mini-components/sair';
 import GeralItens from './mini-components/geral/geral';
 import AmbienteItens from './mini-components/ambiente/ambiente';
 import FisicaItens from './mini-components/fisica/fisica';
@@ -14,6 +15,7 @@ import InputItens from './mini-components/input/input';
 import RenderizacaoItens from './mini-components/renderizacao/renderizacao';
 
 type PanelKey =
+    | 'sair'
     | 'geral'
     | 'fisica'
     | 'ambiente'
@@ -37,6 +39,7 @@ export default function Header({ project }: Props) {
     const is3D = project.config.dimension === '3D';
 
     const panelComponents: Record<PanelKey, ReactNode> = {
+        sair: <OutButton />,
         geral: <GeralItens dimension={project.config.dimension} />,
         fisica: <FisicaItens />,
         ambiente: <AmbienteItens />,
@@ -60,17 +63,19 @@ export default function Header({ project }: Props) {
     return (
         <div className="header-component">
             <div className="body-buttons">
+                <button onClick={()  => setActivePanel('sair')}>
+                    <FaIcons.FaFolderMinus size={24}/>
+                    <h5>Sair</h5>
+                </button>
                 <button onClick={() => setActivePanel('geral')}>
                     <FaIcons.FaHome size={24}/>
                     <h5>Geral</h5>
                 </button>
-
                 {/* Física existe tanto em 2D quanto em 3D (gravidade/colisão valem pros dois) */}
                 <button onClick={() => setActivePanel('fisica')}>
                     <FaIcons.FaAtlas size={24}/>
                     <h5>Fisica</h5>
                 </button>
-
                 {/* Ambiente e Iluminação (skybox, luz de cena) só fazem sentido em 3D */}
                 {is3D && (
                     <button onClick={() => setActivePanel('ambiente')}>
@@ -84,7 +89,6 @@ export default function Header({ project }: Props) {
                         <h5>Iluminação</h5>
                     </button>
                 )}
-
                 <button onClick={() => setActivePanel('camera')}>
                     <FaIcons.FaVideo size={24}/>
                     <h5>Câmera</h5>

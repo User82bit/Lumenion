@@ -1,4 +1,5 @@
 import ItensLayoutBase from '../../components/layout-itens-base/itens-layout';
+import * as FaIcons from 'react-icons/fa'
 
 export default function AmbienteItens() {
     return (
@@ -6,7 +7,7 @@ export default function AmbienteItens() {
             isVisible={true}
             content={
                 <>
-                    <button>Configurar ambiente</button>
+                    <button><FaIcons.FaMountain size={24}/><h5>Configurar ambiente</h5></button>
                 </>
             }
         />

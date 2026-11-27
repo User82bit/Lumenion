@@ -6,12 +6,12 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 #endif
 
-namespace Lumenion;
+namespace Lumenion.Services;
 
 public class EngineService
 {
     [JSInvokable("AbrirSelecionadorDeArquivo")]
-    public static async Task<byte[]?> AbrirSelecionadorDeArquivo()
+    internal static async Task<byte[]?> AbrirSelecionadorDeArquivo()
     {
         var opcoesDeFiltro = new PickOptions
         {

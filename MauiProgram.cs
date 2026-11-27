@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using CommunityToolkit.Maui; // 🌟 Adicione esse namespace
+using Lumenion.Services;
 
 namespace Lumenion
 {
@@ -18,6 +19,7 @@ namespace Lumenion
 
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSingleton<EngineService>();
+            builder.Services.AddSingleton<ExtensionsService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
