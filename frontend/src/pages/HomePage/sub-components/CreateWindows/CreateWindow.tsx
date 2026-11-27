@@ -58,6 +58,8 @@ export default function CreateWindow(props: Props) {
               <button
                 type="button"
                 className={config.dimension === '3D' ? 'selected' : ''}
+                disabled={editingProjectId !== null}
+                title={editingProjectId !== null ? 'A dimensão é definida na criação e não pode ser alterada.' : undefined}
                 onClick={() => updateConfig('dimension', '3D' as ProjectDimension)}
               >
                 <img src="/assets/pngs/3d.png" width={100}/>
@@ -65,11 +67,16 @@ export default function CreateWindow(props: Props) {
               <button
                 type="button"
                 className={config.dimension === '2D' ? 'selected' : ''}
+                disabled={editingProjectId !== null}
+                title={editingProjectId !== null ? 'A dimensão é definida na criação e não pode ser alterada.' : undefined}
                 onClick={() => updateConfig('dimension', '2D' as ProjectDimension)}
               >
                 <img src="/assets/pngs/2d.png" width={100}/>
               </button>
             </div>
+            {editingProjectId !== null && (
+              <span className="config-hint">A dimensão {config.dimension} foi definida na criação e permanece fixa durante toda a vida deste projeto.</span>
+            )}
           </div>
 
           <div className="config-section">
