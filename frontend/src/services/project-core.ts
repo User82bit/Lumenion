@@ -8,6 +8,7 @@ import {
   saveProject,
   type ProjectConfig,
   type StoredProject,
+  type SaveProjectInput,
 } from './project-store';
 import type { ProjectManifest } from './project-manifest';
 
@@ -27,6 +28,13 @@ function publish(event: ProjectCoreEvent): void {
 export function subscribeToProjectEvents(listener: ProjectCoreListener): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
+}
+
+/** Persiste identidade e configurações pela camada central do projeto. */
+export function saveProjectContext(input: SaveProjectInput): StoredProject {
+  const saved = saveProject(input);
+  publish({ type: 'project.saved', projectId: saved.id, manifest: saved.manifest });
+  return saved;
 }
 
 /** Retorna o registro completo e o manifesto central do projeto. */
