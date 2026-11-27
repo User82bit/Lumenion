@@ -1,7 +1,7 @@
 # Acompanhamento — Sistema de Extensões
 
 **Status geral:** Em desenvolvimento  
-**Branch de documentação:** `docs/extensions-ipc`  
+**Branch de documentação:** `docs/extensions-ipc-auth`  
 **Branch de homologação:** `homologa`
 
 Este arquivo acompanha o processo completo. Atualizar os estados durante cada etapa; não marcar uma etapa como concluída sem evidência.
@@ -28,6 +28,8 @@ Este arquivo acompanha o processo completo. Atualizar os estados durante cada et
 | Definição de dependências e exports | Concluído | Dependências obrigatórias/opcionais e exports privados/internos/públicos via proxy controlado. |
 | Definição do runtime e isolamento | Concluído | Node.js + V8; processo separado por extensão, supervisionado pelo Host C#. |
 | Definição do IPC | Concluído | Windows Named Pipes + JSON-RPC 2.0; canais por extensão e mediação pelo Host C#. |
+| Definição do modelo de autenticação IPC | Concluído | Opção A aprovada: ACL do Windows + verificação do PID do processo supervisionado + handshake criptográfico com nonce de uso único. |
+| Especificação técnica da autenticação IPC | Não iniciado | Definir algoritmos/parâmetros, gestão de credenciais, formato do handshake, ACLs, vínculo PID/instância, anti-hijacking, expiração e reconexão. |
 | Definição dos limites de recursos | Concluído | Limites globais e individuais configuráveis. |
 | Definição de compatibilidade | Concluído | Resolver adaptativo com aliases oficiais e desativação localizada de operações incompatíveis. |
 | Definição da entrega gradual da API | Concluído | Três fases de módulos registradas na especificação. |
@@ -57,7 +59,8 @@ Este arquivo acompanha o processo completo. Atualizar os estados durante cada et
 - Registrados limites de recursos configuráveis e compatibilidade adaptativa.
 - Runtime aprovado: Node.js + V8, com processo próprio por extensão e Runtime Supervisor coordenado pelo Host C#.
 - A decisão substitui a proposta anterior de processo compartilhado para extensões comuns e isolamento apenas para extensões sensíveis.
-- IPC aprovado: Windows Named Pipes + JSON-RPC 2.0, com canal próprio por extensão e mediação do Host C#. Detalhes de ACL, identidade do processo, reconexão, timeouts e limites ainda exigem especificação de segurança.
+- IPC aprovado: Windows Named Pipes + JSON-RPC 2.0, com canal próprio por extensão e mediação do Host C#.
+- Autenticação IPC aprovada: ACL restritiva do Windows, validação do PID contra o processo Node iniciado e supervisionado pelo Runtime Supervisor, e handshake criptográfico com nonce de uso único. A autenticação do canal não substitui a autorização por operação. Algoritmos, gestão de credenciais, ACLs exatas, proteção anti-hijacking, expiração e reconexão permanecem pendentes de especificação técnica.
 - WebView2 permanece separada do runtime lógico e utiliza seu próprio mecanismo de mensagens; não terá acesso direto aos pipes do runtime.
 - Registrada a entrega gradual da Extension API em três fases.
 - Nenhuma alteração em código de produto foi realizada nesta etapa.
