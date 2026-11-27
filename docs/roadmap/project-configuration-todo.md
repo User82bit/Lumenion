@@ -136,6 +136,6 @@ As branches são propostas e podem ser agrupadas quando houver dependência téc
 
 | Data | Branch/PR | Alterações | Testes/evidências | Status |
 |---|---|---|---|---|
-| 2026-11-27 | `docs/project-configuration-architecture` | Criação da documentação arquitetural e do TODO | Revisão documental; nenhuma implementação funcional executada | Em desenvolvimento |
+| 2026-11-27 | `docs/project-configuration-architecture` | Criação da documentação arquitetural e do TODO | Revisão documental; nenhuma implementação funcional executada | Revisão |
 
 Atualizar este registro em cada etapa. Quando a documentação desta branch for revisada e o PR aberto, alterar o status correspondente para **Revisão**.
