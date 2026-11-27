@@ -94,6 +94,10 @@ export function saveProject(project: SaveProjectInput): StoredProject {
     const all = readAll();
     const existing = all[project.id];
 
+    if (project.manifest && !validateProjectManifest(project.manifest)) {
+        throw new Error('O manifesto informado possui estrutura inválida ou versão não suportada.');
+    }
+
     if (existing) {
         assertProjectDimensionUnchanged(existing.manifest.structure.dimension, project.config.dimension);
         if (project.manifest) {
