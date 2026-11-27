@@ -3,7 +3,7 @@
 **Status:** Em desenvolvimento — especificação arquitetural  
 **Escopo deste documento:** registrar decisões aprovadas e propostas ainda pendentes antes da implementação.  
 **Plataforma-alvo inicial:** Windows  
-**Branch de trabalho:** `docs/extensions-node-runtime`  
+**Branch de trabalho:** `docs/extensions-ipc`  
 **Destino do PR:** `homologa`
 
 > Este documento descreve o contrato arquitetural planejado. Não representa funcionalidades já implementadas.
@@ -128,6 +128,23 @@ Decisão aprovada: **Node.js + V8, com um processo separado por extensão**.
 - Extensões que solicitem capacidades sensíveis (por exemplo, execução de comandos ou processos externos) estarão sujeitas a restrições adicionais do Windows, a serem especificadas e testadas.
 
 **Requisito de segurança:** node:vm, worker_threads, contextos V8 e iframes não serão tratados isoladamente como fronteiras de segurança entre extensões não confiáveis. A separação principal será feita por processo do sistema operacional, reforçada por controles de identidade, permissões, limites de recursos e IPC. A política concreta de sandbox do Windows ainda deverá ser detalhada na revisão de segurança.
+
+### 7.1 Comunicação entre processos (IPC)
+
+Decisão aprovada: **Windows Named Pipes como transporte, com JSON-RPC 2.0 como protocolo de mensagens**.
+
+- Cada processo Node.js de extensão terá um canal IPC próprio, criado e administrado pelo Runtime Supervisor/Host C#.
+- O canal será local ao sistema operacional; não será necessário abrir uma porta TCP para a comunicação entre o runtime e o host.
+- JSON-RPC 2.0 padronizará chamadas de métodos, parâmetros, identificadores de requisição, respostas, erros e notificações.
+- O Host C# será o ponto de mediação para chamadas à Extension API e para acesso a serviços internos ou módulos Rust.
+- Chamadas entre extensões serão encaminhadas pelo host/Extension Manager; uma extensão não receberá acesso direto ao canal privado de outra.
+- Cada conexão deverá ser associada a uma identidade de extensão e validada pelo host. A autorização será verificada em cada operação, não apenas no estabelecimento da conexão.
+- Mensagens e parâmetros deverão obedecer a schemas versionados, limites de tamanho e políticas contra abuso, repetição e excesso de chamadas.
+- Falhas, desconexões e timeouts deverão produzir erros controlados sem comprometer o host ou outros runtimes.
+
+O uso de Named Pipes não substitui o sandbox do Windows nem a validação de permissões. ACLs, autenticação da identidade do processo, proteção contra sequestro de pipe, política de reconexão, timeouts e limites de mensagens ainda deverão ser detalhados na especificação de segurança.
+
+A comunicação com WebView2 é uma fronteira distinta: continuará usando o mecanismo de mensagens do WebView2, com validação de origem, conteúdo e schemas. Não se deve expor diretamente o pipe do runtime à interface web.
 
 ## 8. Permissões e operações sensíveis
 
@@ -265,7 +282,7 @@ A ordem é uma estratégia de entrega, não uma promessa de que todos os detalhe
 
 Os itens abaixo não devem ser considerados aprovados por inferência:
 
-- modelo IPC e protocolo de mensagens entre runtime, WebView, C# e Rust;
+- protocolo específico de mensagens entre WebView2 e a camada de UI, incluindo validação de origem e schemas;
 - formato final do manifesto e do pacote;
 - algoritmo de assinatura, verificação de integridade e cadeia de confiança do Marketplace;
 - valores padrão e métricas para limites de CPU/memória;
